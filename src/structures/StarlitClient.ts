@@ -18,7 +18,6 @@ class Logger {
     }
 
     async error(message: string) {
-        console.log("EE")
         const channel = await this.client.channels.fetch(this.logChannelId);
 
         const embed = new EmbedBuilder()

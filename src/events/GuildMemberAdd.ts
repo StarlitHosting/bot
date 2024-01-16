@@ -1,6 +1,7 @@
 import { EmbedBuilder, Events } from "discord.js";
 import { ArgsOf, Discord, On } from "discordx";
 import { StarlitClient } from "../structures/StarlitClient.js";
+import constants from "../constants.js";
 
 @Discord()
 export class GuildMemberAdd {
@@ -8,9 +9,9 @@ export class GuildMemberAdd {
     @On({ event: Events.GuildMemberAdd })
     async onGuildMemberAdd([event]: ArgsOf<Events.GuildMemberAdd>, client: StarlitClient) {
         try {
-            await event.roles.add("1141072474541404250");
+            await event.roles.add(constants.JoinRole);
 
-            const welcomeChannel = await client.channels.fetch("1141804060840820856");
+            const welcomeChannel = await client.channels.fetch(constants.WelcomeChannel);
 
             const welcomeEmbed = new EmbedBuilder()
             .setColor("#facc15")

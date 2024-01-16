@@ -17,7 +17,7 @@ export class InteractionCreate {
                 .setFooter({ text: "If this issue persists feel free to contact us!" })
                 .setColor("#facc15");
 
-                interaction.reply({ embeds: [embed] })
+                interaction.reply({ embeds: [embed], ephemeral: true })
             }
         }
     }

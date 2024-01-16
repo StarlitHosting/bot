@@ -1,9 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, CommandInteraction, EmbedBuilder, PermissionsBitField, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, CommandInteraction, EmbedBuilder, MessageActionRowComponentBuilder, PermissionsBitField, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder } from "discord.js";
 import { ButtonComponent, Discord, SelectMenuComponent, Slash } from "discordx";
 import { StarlitClient } from "../structures/StarlitClient.js";
-import { getAndIncrement } from "../utils/AutoIncrement.js";
+import { getDashboardUser } from "../utils/Utils.js";
 import { Ticket } from "../models/Ticket.js";
-import { createTranscript } from "discord-html-transcripts";
+import { ExportReturnType, createTranscript } from "discord-html-transcripts";
 
 @Discord()
 export class Tickets {
@@ -83,7 +83,7 @@ export class Tickets {
 
         if (!interaction.guild) return;
 
-        const ticketId = (await getAndIncrement()).toString().padStart(4, "0");
+        const ticketId = (await Ticket.count({}) + 1).toString().padStart(4, "0");
 
         const ticketChannel = await interaction.guild.channels.create({
             name: `ticket-${ticketId}`,
@@ -112,7 +112,9 @@ export class Tickets {
             ticketId: ticketId
         })
 
-        const row = new ActionRowBuilder()
+        const dashboardUser = await getDashboardUser(interaction.user.id);
+
+        const row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId("close_ticket")
@@ -123,10 +125,9 @@ export class Tickets {
 
         const ticketEmbed = new EmbedBuilder()
             .setTitle(`Ticket - ${ticketId}`)
-            .setDescription(`Hello ${interaction.user}! Thank you for contacting us, please give further information about your issue / enquiry in this channel.\n\n**Category:** \`${category.emoji} ${category.name}\``)
+            .setDescription(`Hello ${interaction.user}! Thank you for contacting us, please give further information about your issue / enquiry in this channel.${dashboardUser ? `\n\n__User Information__\n**ID:** [${dashboardUser.id}](${process.env.DASHBOARD_URL}/admin/users/${dashboardUser.id})\n**Email:** \`${dashboardUser.email}\`` : ""}\n\n**Category:** \`${category.emoji} ${category.name}\``)
             .setColor("#facc15")
 
-        // @ts-ignore
         await ticketChannel.send({ content: `${interaction.user}`, embeds: [ticketEmbed], components: [row] });
 
         await interaction.followUp({ ephemeral: true, content: `Succesfully created ticket ${ticketChannel}!` })
@@ -139,7 +140,7 @@ export class Tickets {
             .setTitle("🔒 Close Ticket")
             .setDescription("Are you sure you want to close this ticket?");
 
-        const row = new ActionRowBuilder()
+        const row = new ActionRowBuilder<MessageActionRowComponentBuilder>()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId("close_ticket_confirm")
@@ -148,7 +149,6 @@ export class Tickets {
                     .setStyle(ButtonStyle.Danger)
             )
 
-        //@ts-ignore
         await interaction.reply({ embeds: [embed], components: [row], ephemeral: true })
     }
 
@@ -164,10 +164,7 @@ export class Tickets {
         const category = this.ticketCategories.find(_category => _category.id == ticket.category);
 
         const transcript = await createTranscript(interaction.channel, {
-            
-            fileName: `ticket-${ticket.ticketId}-${Date.now()}.html`,
-            // @ts-ignore
-            returnType: "attachment",
+            returnType: ExportReturnType.Attachment,
             poweredBy: false,
             footerText: ""
         })
