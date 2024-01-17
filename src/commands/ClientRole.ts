@@ -19,7 +19,7 @@ export class ClientRole {
         const dashboardUser = await getDashboardUser(interaction.user.id);
 
         if (!dashboardUser) return interaction.reply({
-            content: `It doesnt appear you have linked your discord account on our dashboard. Please visit ${process.env.DASHBOARD_URL}/settings and goto your account settings to connect your account.`,
+            content: `It doesnt appear you have linked your discord account on our dashboard. Please visit ${process.env.DASHBOARD_URL}/account to link your discord account.`,
             ephemeral: true
         });
 
