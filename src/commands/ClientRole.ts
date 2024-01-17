@@ -23,6 +23,11 @@ export class ClientRole {
             ephemeral: true
         });
 
+        if (dashboardUser.services.length == 0) return interaction.reply({
+            content: `The <@&${constants.ClientRole}> is meant for Starlit Hosting clients / customers. To gain access to this role you must have or had an active service with us.`,
+            ephemeral: true
+        });
+
         if (interaction.member instanceof GuildMember) {
             await interaction.member.roles.add(constants.ClientRole);
 
